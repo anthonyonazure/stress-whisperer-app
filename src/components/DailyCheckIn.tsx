@@ -162,17 +162,18 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
           {userTriggers.length > 0 && (
             <div>
               <Label>Triggers Today</Label>
-              <div className="space-y-2 mt-2 p-3 border rounded-md max-h-40 overflow-y-auto">
-                {userTriggers.map((trigger) => (
-                  <div key={trigger} className="flex items-center space-x-2">
+              <div className="grid grid-cols-1 gap-3 mt-2 p-3 border rounded-md max-h-40 overflow-y-auto">
+                {userTriggers.map((trigger, index) => (
+                  <div key={`trigger-${index}`} className="flex items-start space-x-2">
                     <Checkbox
-                      id={`trigger-${trigger}`}
+                      id={`trigger-${index}`}
                       checked={selectedTriggers.includes(trigger)}
                       onCheckedChange={() => handleTriggerToggle(trigger)}
+                      className="mt-0.5"
                     />
                     <label
-                      htmlFor={`trigger-${trigger}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      htmlFor={`trigger-${index}`}
+                      className="text-sm font-medium leading-relaxed cursor-pointer flex-1"
                     >
                       {trigger}
                     </label>
@@ -185,17 +186,18 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
           {userRedFlags.length > 0 && (
             <div>
               <Label>Red Flags Today</Label>
-              <div className="space-y-2 mt-2 p-3 border rounded-md max-h-40 overflow-y-auto">
-                {userRedFlags.map((flag) => (
-                  <div key={flag} className="flex items-center space-x-2">
+              <div className="grid grid-cols-1 gap-3 mt-2 p-3 border rounded-md max-h-40 overflow-y-auto">
+                {userRedFlags.map((flag, index) => (
+                  <div key={`flag-${index}`} className="flex items-start space-x-2">
                     <Checkbox
-                      id={`flag-${flag}`}
+                      id={`flag-${index}`}
                       checked={selectedRedFlags.includes(flag)}
                       onCheckedChange={() => handleRedFlagToggle(flag)}
+                      className="mt-0.5"
                     />
                     <label
-                      htmlFor={`flag-${flag}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      htmlFor={`flag-${index}`}
+                      className="text-sm font-medium leading-relaxed cursor-pointer flex-1"
                     >
                       {flag}
                     </label>
