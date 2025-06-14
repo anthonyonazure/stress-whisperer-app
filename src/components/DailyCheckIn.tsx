@@ -90,15 +90,20 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
     onComplete();
   };
   
-  const handleCheckboxChange = (
-    list: string[], 
-    setList: React.Dispatch<React.SetStateAction<string[]>>, 
-    item: string
-  ) => {
-    const newList = list.includes(item)
-      ? list.filter((i) => i !== item)
-      : [...list, item];
-    setList(newList);
+  const handleTriggerToggle = (trigger: string) => {
+    setSelectedTriggers(prev => 
+      prev.includes(trigger) 
+        ? prev.filter(t => t !== trigger)
+        : [...prev, trigger]
+    );
+  };
+
+  const handleRedFlagToggle = (flag: string) => {
+    setSelectedRedFlags(prev => 
+      prev.includes(flag) 
+        ? prev.filter(f => f !== flag)
+        : [...prev, flag]
+    );
   };
 
   const getStressColor = (level: number) => {
@@ -163,11 +168,11 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
                     <Checkbox
                       id={`trigger-${trigger}`}
                       checked={selectedTriggers.includes(trigger)}
-                      onCheckedChange={() => handleCheckboxChange(selectedTriggers, setSelectedTriggers, trigger)}
+                      onCheckedChange={() => handleTriggerToggle(trigger)}
                     />
                     <label
                       htmlFor={`trigger-${trigger}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
                       {trigger}
                     </label>
@@ -186,11 +191,11 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
                     <Checkbox
                       id={`flag-${flag}`}
                       checked={selectedRedFlags.includes(flag)}
-                      onCheckedChange={() => handleCheckboxChange(selectedRedFlags, setSelectedRedFlags, flag)}
+                      onCheckedChange={() => handleRedFlagToggle(flag)}
                     />
                     <label
                       htmlFor={`flag-${flag}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
                       {flag}
                     </label>
