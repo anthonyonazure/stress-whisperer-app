@@ -12,11 +12,14 @@ interface TriggersListProps {
 const TriggersList = ({ userTriggers, selectedTriggers, onTriggerToggle }: TriggersListProps) => {
   if (userTriggers.length === 0) return null;
 
+  // Handle cases where triggers might be stored as a single comma-separated string
+  const allTriggers = userTriggers.flatMap(t => t.split(',').map(s => s.trim()).filter(Boolean));
+
   return (
     <div>
       <Label>Triggers Today</Label>
       <div className="grid grid-cols-1 gap-3 mt-2 p-3 border rounded-md max-h-40 overflow-y-auto">
-        {userTriggers.map((trigger, index) => (
+        {allTriggers.map((trigger, index) => (
           <div key={`trigger-${index}`} className="flex items-start space-x-2">
             <Checkbox
               id={`trigger-${index}`}
