@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar, TrendingUp, MessageSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,27 +5,53 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import StressChart from '@/components/StressChart';
 import DailyQuote from '@/components/DailyQuote';
+import Onboarding from '@/components/Onboarding';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [todaysEntry, setTodaysEntry] = useState(null);
+  const [hasOnboarded, setHasOnboarded] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hasOnboarded') === 'true';
+    }
+    return false;
+  });
 
   const getTodayKey = () => {
     return new Date().toISOString().split('T')[0];
   };
 
   useEffect(() => {
+    if (hasOnboarded) {
+      const todayKey = getTodayKey();
+      const stored = localStorage.getItem(`stress-entry-${todayKey}`);
+      if (stored) {
+        setTodaysEntry(JSON.parse(stored));
+      } else {
+        setTodaysEntry(null);
+      }
+    }
+  }, [hasOnboarded, currentView]);
+
+  const handleOnboardingComplete = () => {
+    setHasOnboarded(true);
+    setCurrentView('dashboard');
+  };
+  
+  const handleCheckinComplete = () => {
+    setCurrentView('dashboard');
+    // We re-trigger the useEffect to reload the latest entry
     const todayKey = getTodayKey();
     const stored = localStorage.getItem(`stress-entry-${todayKey}`);
     if (stored) {
       setTodaysEntry(JSON.parse(stored));
     }
-  }, []);
+  }
 
   const renderView = () => {
     switch (currentView) {
       case 'checkin':
-        return <DailyCheckIn onComplete={() => setCurrentView('dashboard')} />;
+        return <DailyCheckIn onComplete={handleCheckinComplete} />;
       case 'trends':
         return <StressChart />;
       default:
@@ -57,9 +82,9 @@ const Index = () => {
                     <div className="text-sm text-blue-700">
                       <strong>Mood:</strong> {todaysEntry.mood}
                     </div>
-                    {todaysEntry.triggers && (
+                    {todaysEntry.triggers && todaysEntry.triggers.length > 0 && (
                       <div className="text-sm text-blue-700">
-                        <strong>Triggers:</strong> {todaysEntry.triggers}
+                        <strong>Triggers:</strong> {Array.isArray(todaysEntry.triggers) ? todaysEntry.triggers.join(', ') : todaysEntry.triggers}
                       </div>
                     )}
                     <Button 
@@ -109,6 +134,10 @@ const Index = () => {
         );
     }
   };
+
+  if (!hasOnboarded) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">

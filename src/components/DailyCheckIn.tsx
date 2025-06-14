@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import SelfCarePrompts from './SelfCarePrompts';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DailyCheckInProps {
   onComplete: () => void;
@@ -18,8 +18,10 @@ interface DailyCheckInProps {
 const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
   const [stressLevel, setStressLevel] = useState([5]);
   const [mood, setMood] = useState('');
-  const [triggers, setTriggers] = useState('');
-  const [redFlags, setRedFlags] = useState('');
+  const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
+  const [selectedRedFlags, setSelectedRedFlags] = useState<string[]>([]);
+  const [userTriggers, setUserTriggers] = useState<string[]>([]);
+  const [userRedFlags, setUserRedFlags] = useState<string[]>([]);
   const [comments, setComments] = useState('');
   const [showPrompts, setShowPrompts] = useState(false);
   const { toast } = useToast();
@@ -29,33 +31,39 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
   };
 
   useEffect(() => {
+    const storedUserTriggers = localStorage.getItem('user-triggers');
+    if (storedUserTriggers) setUserTriggers(JSON.parse(storedUserTriggers));
+    
+    const storedUserRedFlags = localStorage.getItem('user-red-flags');
+    if (storedUserRedFlags) setUserRedFlags(JSON.parse(storedUserRedFlags));
+
     const todayKey = getTodayKey();
     const stored = localStorage.getItem(`stress-entry-${todayKey}`);
     if (stored) {
       const entry = JSON.parse(stored);
       setStressLevel([entry.stressLevel]);
       setMood(entry.mood);
-      setTriggers(entry.triggers || '');
-      setRedFlags(entry.redFlags || '');
+      setSelectedTriggers(Array.isArray(entry.triggers) ? entry.triggers : (entry.triggers ? [entry.triggers] : []));
+      setSelectedRedFlags(Array.isArray(entry.redFlags) ? entry.redFlags : (entry.redFlags ? [entry.redFlags] : []));
       setComments(entry.comments || '');
     }
   }, []);
 
   useEffect(() => {
-    if (stressLevel[0] >= 7 || redFlags.length > 0) {
+    if (stressLevel[0] >= 7 || selectedRedFlags.length > 0) {
       setShowPrompts(true);
     } else {
       setShowPrompts(false);
     }
-  }, [stressLevel, redFlags]);
+  }, [stressLevel, selectedRedFlags]);
 
   const handleSave = () => {
     const entry = {
       date: getTodayKey(),
       stressLevel: stressLevel[0],
       mood,
-      triggers,
-      redFlags,
+      triggers: selectedTriggers,
+      redFlags: selectedRedFlags,
       comments,
       timestamp: new Date().toISOString(),
     };
@@ -80,6 +88,17 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
     });
 
     onComplete();
+  };
+  
+  const handleCheckboxChange = (
+    list: string[], 
+    setList: React.Dispatch<React.SetStateAction<string[]>>, 
+    item: string
+  ) => {
+    const newList = list.includes(item)
+      ? list.filter((i) => i !== item)
+      : [...list, item];
+    setList(newList);
   };
 
   const getStressColor = (level: number) => {
@@ -135,25 +154,51 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="triggers">Triggers (if any)</Label>
-            <Input
-              id="triggers"
-              value={triggers}
-              onChange={(e) => setTriggers(e.target.value)}
-              placeholder="What triggered stress today?"
-            />
-          </div>
+          {userTriggers.length > 0 && (
+            <div>
+              <Label>Triggers Today</Label>
+              <div className="space-y-2 mt-2 p-3 border rounded-md max-h-40 overflow-y-auto">
+                {userTriggers.map((trigger) => (
+                  <div key={trigger} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`trigger-${trigger}`}
+                      checked={selectedTriggers.includes(trigger)}
+                      onCheckedChange={() => handleCheckboxChange(selectedTriggers, setSelectedTriggers, trigger)}
+                    />
+                    <label
+                      htmlFor={`trigger-${trigger}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {trigger}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-          <div>
-            <Label htmlFor="redFlags">Red Flags</Label>
-            <Input
-              id="redFlags"
-              value={redFlags}
-              onChange={(e) => setRedFlags(e.target.value)}
-              placeholder="Any warning signs or patterns?"
-            />
-          </div>
+          {userRedFlags.length > 0 && (
+            <div>
+              <Label>Red Flags Today</Label>
+              <div className="space-y-2 mt-2 p-3 border rounded-md max-h-40 overflow-y-auto">
+                {userRedFlags.map((flag) => (
+                  <div key={flag} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`flag-${flag}`}
+                      checked={selectedRedFlags.includes(flag)}
+                      onCheckedChange={() => handleCheckboxChange(selectedRedFlags, setSelectedRedFlags, flag)}
+                    />
+                    <label
+                      htmlFor={`flag-${flag}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {flag}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <Label htmlFor="comments">Daily Notes</Label>
