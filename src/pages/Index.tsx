@@ -1,11 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
-import { Calendar, TrendingUp, MessageSquare, Plus } from 'lucide-react';
+import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import StressChart from '@/components/StressChart';
 import DailyQuote from '@/components/DailyQuote';
 import Onboarding from '@/components/Onboarding';
+import Settings from '@/components/Settings';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -54,6 +56,8 @@ const Index = () => {
         return <DailyCheckIn onComplete={handleCheckinComplete} />;
       case 'trends':
         return <StressChart />;
+      case 'settings':
+        return <Settings onBack={() => setCurrentView('dashboard')} />;
       default:
         return (
           <div className="space-y-6">
@@ -130,6 +134,15 @@ const Index = () => {
                 <span className="text-green-700 font-medium">Daily Check-in</span>
               </Button>
             </div>
+
+            <Button
+              onClick={() => setCurrentView('settings')}
+              variant="outline"
+              className="w-full h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 hover:from-orange-100 hover:to-yellow-100"
+            >
+              <SettingsIcon className="h-6 w-6 text-orange-600" />
+              <span className="text-orange-700 font-medium">Edit Red Flags & Triggers</span>
+            </Button>
           </div>
         );
     }
