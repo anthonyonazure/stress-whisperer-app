@@ -3,19 +3,51 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const StressChart = () => {
+  const { user } = useAuth();
   const [entries, setEntries] = useState([]);
   const [viewType, setViewType] = useState('line');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const allEntries = JSON.parse(localStorage.getItem('all-stress-entries') || '[]');
-    const sortedEntries = allEntries
-      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-30); // Last 30 days
-    
-    setEntries(sortedEntries);
-  }, []);
+    if (user) {
+      loadEntries();
+    }
+  }, [user]);
+
+  const loadEntries = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('daily_entries')
+        .select('entry_date, stress_level, mood')
+        .eq('user_id', user.id)
+        .order('entry_date', { ascending: true })
+        .limit(30);
+
+      if (error) {
+        console.error('Error loading entries:', error);
+        return;
+      }
+
+      const formattedEntries = data?.map(entry => ({
+        date: entry.entry_date,
+        stressLevel: entry.stress_level,
+        mood: entry.mood
+      })) || [];
+
+      setEntries(formattedEntries);
+    } catch (error) {
+      console.error('Error loading entries:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -62,7 +94,12 @@ const StressChart = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {entries.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading data...</p>
+            </div>
+          ) : entries.length > 0 ? (
             <div>
               <div className="h-64 w-full mb-6">
                 <ResponsiveContainer width="100%" height="100%">

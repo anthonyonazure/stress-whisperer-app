@@ -1,54 +1,106 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserData } from '@/hooks/useUserData';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import StressChart from '@/components/StressChart';
 import DailyQuote from '@/components/DailyQuote';
-import Onboarding from '@/components/Onboarding';
-import Settings from '@/components/Settings';
+import UserOnboarding from '@/components/UserOnboarding';
+import UserSettings from '@/components/UserSettings';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { redFlags, triggers, loading: dataLoading } = useUserData();
+  const { toast } = useToast();
   const [currentView, setCurrentView] = useState('dashboard');
   const [todaysEntry, setTodaysEntry] = useState(null);
-  const [hasOnboarded, setHasOnboarded] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('hasOnboarded') === 'true';
+  const [hasOnboarded, setHasOnboarded] = useState(false);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
     }
-    return false;
-  });
+  }, [user, authLoading, navigate]);
+
+  // Check if user has completed onboarding (has red flags or triggers)
+  useEffect(() => {
+    if (user && !dataLoading) {
+      setHasOnboarded(redFlags.length > 0 || triggers.length > 0);
+    }
+  }, [user, redFlags, triggers, dataLoading]);
 
   const getTodayKey = () => {
     return new Date().toISOString().split('T')[0];
   };
 
   useEffect(() => {
-    if (hasOnboarded) {
-      const todayKey = getTodayKey();
-      const stored = localStorage.getItem(`stress-entry-${todayKey}`);
-      if (stored) {
-        setTodaysEntry(JSON.parse(stored));
+    if (hasOnboarded && user) {
+      loadTodaysEntry();
+    }
+  }, [hasOnboarded, user, currentView]);
+
+  const loadTodaysEntry = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase.from('daily_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('entry_date', getTodayKey())
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading today\'s entry:', error);
+        return;
+      }
+
+      if (data) {
+        setTodaysEntry({
+          stressLevel: data.stress_level,
+          mood: data.mood,
+          triggers: data.selected_triggers,
+          redFlags: data.selected_red_flags,
+          notes: data.notes
+        });
       } else {
         setTodaysEntry(null);
       }
+    } catch (error) {
+      console.error('Error loading today\'s entry:', error);
     }
-  }, [hasOnboarded, currentView]);
+  };
 
   const handleOnboardingComplete = () => {
     setHasOnboarded(true);
     setCurrentView('dashboard');
   };
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive"
+      });
+    } else {
+      navigate('/auth');
+    }
+  };
   
   const handleCheckinComplete = () => {
     setCurrentView('dashboard');
-    // We re-trigger the useEffect to reload the latest entry
-    const todayKey = getTodayKey();
-    const stored = localStorage.getItem(`stress-entry-${todayKey}`);
-    if (stored) {
-      setTodaysEntry(JSON.parse(stored));
-    }
-  }
+    // Reload today's entry from database
+    loadTodaysEntry();
+  };
 
   const renderView = () => {
     switch (currentView) {
@@ -57,7 +109,7 @@ const Index = () => {
       case 'trends':
         return <StressChart />;
       case 'settings':
-        return <Settings onBack={() => setCurrentView('dashboard')} />;
+        return <UserSettings onBack={() => setCurrentView('dashboard')} />;
       default:
         return (
           <div className="space-y-6">
@@ -148,18 +200,43 @@ const Index = () => {
     }
   };
 
+  // Show loading state
+  if (authLoading || dataLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if user is not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
+
   if (!hasOnboarded) {
-    return <Onboarding onComplete={handleOnboardingComplete} />;
+    return <UserOnboarding onComplete={handleOnboardingComplete} />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="max-w-md mx-auto p-4 space-y-6">
-        <header className="text-center py-6">
+        <header className="text-center py-6 relative">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             MindTracker
           </h1>
           <p className="text-gray-600 mt-2">Your daily wellness companion</p>
+          <Button
+            onClick={handleSignOut}
+            variant="ghost"
+            size="sm"
+            className="absolute top-6 right-0 text-gray-500 hover:text-gray-700"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </header>
 
         {currentView !== 'dashboard' && (

@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserData } from '@/hooks/useUserData';
+import { supabase } from '@/integrations/supabase/client';
 import SelfCarePrompts from './SelfCarePrompts';
 import StressLevelSlider from './StressLevelSlider';
 import MoodSelector from './MoodSelector';
@@ -16,14 +19,15 @@ interface DailyCheckInProps {
 }
 
 const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
+  const { user } = useAuth();
+  const { redFlags, triggers } = useUserData();
   const [stressLevel, setStressLevel] = useState([5]);
   const [mood, setMood] = useState('');
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
   const [selectedRedFlags, setSelectedRedFlags] = useState<string[]>([]);
-  const [userTriggers, setUserTriggers] = useState<string[]>([]);
-  const [userRedFlags, setUserRedFlags] = useState<string[]>([]);
   const [comments, setComments] = useState('');
   const [showPrompts, setShowPrompts] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const getTodayKey = () => {
@@ -31,23 +35,38 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
   };
 
   useEffect(() => {
-    const storedUserTriggers = localStorage.getItem('user-triggers');
-    if (storedUserTriggers) setUserTriggers(JSON.parse(storedUserTriggers));
-    
-    const storedUserRedFlags = localStorage.getItem('user-red-flags');
-    if (storedUserRedFlags) setUserRedFlags(JSON.parse(storedUserRedFlags));
-
-    const todayKey = getTodayKey();
-    const stored = localStorage.getItem(`stress-entry-${todayKey}`);
-    if (stored) {
-      const entry = JSON.parse(stored);
-      setStressLevel([entry.stressLevel]);
-      setMood(entry.mood);
-      setSelectedTriggers(Array.isArray(entry.triggers) ? entry.triggers : (entry.triggers ? [entry.triggers] : []));
-      setSelectedRedFlags(Array.isArray(entry.redFlags) ? entry.redFlags : (entry.redFlags ? [entry.redFlags] : []));
-      setComments(entry.comments || '');
+    if (user) {
+      loadTodaysEntry();
     }
-  }, []);
+  }, [user]);
+
+  const loadTodaysEntry = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('daily_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('entry_date', getTodayKey())
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading today\'s entry:', error);
+        return;
+      }
+
+      if (data) {
+        setStressLevel([data.stress_level || 5]);
+        setMood(data.mood || '');
+        setSelectedTriggers(data.selected_triggers || []);
+        setSelectedRedFlags(data.selected_red_flags || []);
+        setComments(data.notes || '');
+      }
+    } catch (error) {
+      console.error('Error loading today\'s entry:', error);
+    }
+  };
 
   useEffect(() => {
     if (stressLevel[0] >= 7 || selectedRedFlags.length > 0) {
@@ -57,37 +76,45 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
     }
   }, [stressLevel, selectedRedFlags]);
 
-  const handleSave = () => {
-    const entry = {
-      date: getTodayKey(),
-      stressLevel: stressLevel[0],
-      mood,
-      triggers: selectedTriggers,
-      redFlags: selectedRedFlags,
-      comments,
-      timestamp: new Date().toISOString(),
-    };
+  const handleSave = async () => {
+    if (!user) return;
 
-    localStorage.setItem(`stress-entry-${getTodayKey()}`, JSON.stringify(entry));
-    
-    // Also save to a list for trending
-    const allEntries = JSON.parse(localStorage.getItem('all-stress-entries') || '[]');
-    const existingIndex = allEntries.findIndex((e: any) => e.date === entry.date);
-    
-    if (existingIndex >= 0) {
-      allEntries[existingIndex] = entry;
-    } else {
-      allEntries.push(entry);
+    setLoading(true);
+    try {
+      const entryData = {
+        user_id: user.id,
+        entry_date: getTodayKey(),
+        stress_level: stressLevel[0],
+        mood,
+        selected_triggers: selectedTriggers,
+        selected_red_flags: selectedRedFlags,
+        notes: comments,
+      };
+
+      const { error } = await supabase
+        .from('daily_entries')
+        .upsert(entryData, {
+          onConflict: 'user_id,entry_date'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Entry saved!",
+        description: "Your daily check-in has been recorded.",
+      });
+
+      onComplete();
+    } catch (error) {
+      console.error('Error saving entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your check-in. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    localStorage.setItem('all-stress-entries', JSON.stringify(allEntries));
-
-    toast({
-      title: "Entry saved!",
-      description: "Your daily check-in has been recorded.",
-    });
-
-    onComplete();
   };
   
   const handleTriggerToggle = (trigger: string) => {
@@ -118,13 +145,13 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
           <MoodSelector value={mood} onChange={setMood} />
 
           <TriggersList 
-            userTriggers={userTriggers}
+            userTriggers={triggers}
             selectedTriggers={selectedTriggers}
             onTriggerToggle={handleTriggerToggle}
           />
 
           <RedFlagsList 
-            userRedFlags={userRedFlags}
+            userRedFlags={redFlags}
             selectedRedFlags={selectedRedFlags}
             onRedFlagToggle={handleRedFlagToggle}
           />
@@ -142,9 +169,9 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
           <Button 
             onClick={handleSave} 
             className="w-full bg-blue-600 hover:bg-blue-700"
-            disabled={!mood}
+            disabled={!mood || loading}
           >
-            Save Check-in
+            {loading ? 'Saving...' : 'Save Check-in'}
           </Button>
         </CardContent>
       </Card>
