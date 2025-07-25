@@ -77,10 +77,10 @@ const ListManager = ({ title, list, addItem, removeItem, placeholder }: ListMana
 };
 
 const UserOnboarding = ({ onComplete }: UserOnboardingProps) => {
-  const { redFlags, triggers, addRedFlag, removeRedFlag, addTrigger, removeTrigger } = useUserData();
+  const { redFlags, triggers, boundaries, addRedFlag, removeRedFlag, addTrigger, removeTrigger, addBoundary, removeBoundary } = useUserData();
 
   const handleSave = () => {
-    if (redFlags.length > 0 || triggers.length > 0) {
+    if (redFlags.length > 0 || triggers.length > 0 || boundaries.length > 0) {
       onComplete();
     }
   };
@@ -93,7 +93,7 @@ const UserOnboarding = ({ onComplete }: UserOnboardingProps) => {
             Welcome to MindTracker
           </h1>
           <p className="text-gray-600">
-            Let's personalize your experience by setting up your red flags and stress triggers.
+            Let's personalize your experience by setting up your red flags, stress triggers, and boundaries.
           </p>
         </header>
 
@@ -120,10 +120,18 @@ const UserOnboarding = ({ onComplete }: UserOnboardingProps) => {
               placeholder="e.g., Work deadlines, Traffic"
             />
 
+            <ListManager
+              title="Your Boundaries"
+              list={boundaries}
+              addItem={addBoundary}
+              removeItem={removeBoundary}
+              placeholder="e.g., No work calls after 6pm, Take lunch breaks"
+            />
+
             <Button 
               onClick={handleSave}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={redFlags.length === 0 && triggers.length === 0}
+              disabled={redFlags.length === 0 && triggers.length === 0 && boundaries.length === 0}
             >
               Save and Start Tracking
             </Button>

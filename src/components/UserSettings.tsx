@@ -77,7 +77,7 @@ const ListManager = ({ title, list, addItem, removeItem, placeholder }: ListMana
 };
 
 const UserSettings = ({ onBack }: UserSettingsProps) => {
-  const { redFlags, triggers, addRedFlag, removeRedFlag, addTrigger, removeTrigger } = useUserData();
+  const { redFlags, triggers, boundaries, addRedFlag, removeRedFlag, addTrigger, removeTrigger, addBoundary, removeBoundary } = useUserData();
 
   return (
     <div className="space-y-6">
@@ -111,6 +111,14 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addTrigger}
             removeItem={removeTrigger}
             placeholder="e.g., Work deadlines, Traffic"
+          />
+
+          <ListManager
+            title="Your Boundaries"
+            list={boundaries}
+            addItem={addBoundary}
+            removeItem={removeBoundary}
+            placeholder="e.g., No work calls after 6pm, Take lunch breaks"
           />
         </CardContent>
       </Card>

@@ -8,6 +8,7 @@ export const useUserData = () => {
   const { toast } = useToast();
   const [redFlags, setRedFlags] = useState<string[]>([]);
   const [triggers, setTriggers] = useState<string[]>([]);
+  const [boundaries, setBoundaries] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load user's red flags and triggers
@@ -17,6 +18,7 @@ export const useUserData = () => {
     } else {
       setRedFlags([]);
       setTriggers([]);
+      setBoundaries([]);
       setLoading(false);
     }
   }, [user]);
@@ -43,8 +45,17 @@ export const useUserData = () => {
 
       if (triggersError) throw triggersError;
 
+      // Load boundaries
+      const { data: boundariesData, error: boundariesError } = await supabase
+        .from('boundaries')
+        .select('boundary_text')
+        .eq('user_id', user.id);
+
+      if (boundariesError) throw boundariesError;
+
       setRedFlags(redFlagsData?.map(item => item.flag_text) || []);
       setTriggers(triggersData?.map(item => item.trigger_text) || []);
+      setBoundaries(boundariesData?.map(item => item.boundary_text) || []);
     } catch (error) {
       console.error('Error loading user data:', error);
       toast({
@@ -161,14 +172,69 @@ export const useUserData = () => {
     }
   };
 
+  const addBoundary = async (boundaryText: string) => {
+    if (!user || boundaries.includes(boundaryText) || boundaries.length >= 40) return;
+
+    try {
+      const { error } = await supabase
+        .from('boundaries')
+        .insert({ user_id: user.id, boundary_text: boundaryText });
+
+      if (error) throw error;
+
+      setBoundaries(prev => [...prev, boundaryText]);
+      toast({
+        title: "Added",
+        description: "Boundary added successfully."
+      });
+    } catch (error) {
+      console.error('Error adding boundary:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add boundary. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const removeBoundary = async (boundaryText: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('boundaries')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('boundary_text', boundaryText);
+
+      if (error) throw error;
+
+      setBoundaries(prev => prev.filter(boundary => boundary !== boundaryText));
+      toast({
+        title: "Removed",
+        description: "Boundary removed successfully."
+      });
+    } catch (error) {
+      console.error('Error removing boundary:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove boundary. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return {
     redFlags,
     triggers,
+    boundaries,
     loading,
     addRedFlag,
     removeRedFlag,
     addTrigger,
     removeTrigger,
+    addBoundary,
+    removeBoundary,
     reloadData: loadUserData
   };
 };

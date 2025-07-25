@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      boundaries: {
+        Row: {
+          boundary_text: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          boundary_text: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          boundary_text?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_entries: {
         Row: {
           created_at: string
@@ -21,6 +42,7 @@ export type Database = {
           id: string
           mood: string | null
           notes: string | null
+          selected_boundaries: string[] | null
           selected_red_flags: string[] | null
           selected_triggers: string[] | null
           stress_level: number | null
@@ -33,6 +55,7 @@ export type Database = {
           id?: string
           mood?: string | null
           notes?: string | null
+          selected_boundaries?: string[] | null
           selected_red_flags?: string[] | null
           selected_triggers?: string[] | null
           stress_level?: number | null
@@ -45,6 +68,7 @@ export type Database = {
           id?: string
           mood?: string | null
           notes?: string | null
+          selected_boundaries?: string[] | null
           selected_red_flags?: string[] | null
           selected_triggers?: string[] | null
           stress_level?: number | null

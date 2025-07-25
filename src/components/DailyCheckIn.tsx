@@ -12,6 +12,7 @@ import StressLevelSlider from './StressLevelSlider';
 import MoodSelector from './MoodSelector';
 import TriggersList from './TriggersList';
 import RedFlagsList from './RedFlagsList';
+import BoundariesList from './BoundariesList';
 import DailyNotes from './DailyNotes';
 
 interface DailyCheckInProps {
@@ -20,11 +21,12 @@ interface DailyCheckInProps {
 
 const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
   const { user } = useAuth();
-  const { redFlags, triggers } = useUserData();
+  const { redFlags, triggers, boundaries } = useUserData();
   const [stressLevel, setStressLevel] = useState([5]);
   const [mood, setMood] = useState('');
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
   const [selectedRedFlags, setSelectedRedFlags] = useState<string[]>([]);
+  const [selectedBoundaries, setSelectedBoundaries] = useState<string[]>([]);
   const [comments, setComments] = useState('');
   const [showPrompts, setShowPrompts] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,6 +63,7 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
         setMood(data.mood || '');
         setSelectedTriggers(data.selected_triggers || []);
         setSelectedRedFlags(data.selected_red_flags || []);
+        setSelectedBoundaries(data.selected_boundaries || []);
         setComments(data.notes || '');
       }
     } catch (error) {
@@ -88,6 +91,7 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
         mood,
         selected_triggers: selectedTriggers,
         selected_red_flags: selectedRedFlags,
+        selected_boundaries: selectedBoundaries,
         notes: comments,
       };
 
@@ -133,6 +137,14 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
     );
   };
 
+  const handleBoundaryToggle = (boundary: string) => {
+    setSelectedBoundaries(prev => 
+      prev.includes(boundary) 
+        ? prev.filter(b => b !== boundary)
+        : [...prev, boundary]
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -154,6 +166,12 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
             userRedFlags={redFlags}
             selectedRedFlags={selectedRedFlags}
             onRedFlagToggle={handleRedFlagToggle}
+          />
+
+          <BoundariesList 
+            userBoundaries={boundaries}
+            selectedBoundaries={selectedBoundaries}
+            onBoundaryToggle={handleBoundaryToggle}
           />
 
           <DailyNotes value={comments} onChange={setComments} />
