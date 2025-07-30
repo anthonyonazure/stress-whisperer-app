@@ -118,7 +118,7 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             list={redFlags}
             addItem={addRedFlag}
             removeItem={removeRedFlag}
-            placeholder="e.g., Skipping meals, Poor sleep"
+            placeholder="e.g., Feeling misunderstood, Constantly on edge"
             tooltipContent="<strong>Red Flags</strong> are warning signs that indicate your mental health may be declining. Red Flags come in two categories: thoughts and emotions.<br/><br/><strong>Thought Examples:</strong><br/>• 'I'm worthless' or negative self-talk<br/>• 'Nothing will get better'<br/>• Racing or obsessive thoughts<br/><br/><strong>Emotion Examples:</strong><br/>• Feeling overwhelmed or hopeless<br/>• Increased irritability or anger<br/>• Feeling numb or disconnected<br/>• Excessive worry or anxiety"
           />
 
