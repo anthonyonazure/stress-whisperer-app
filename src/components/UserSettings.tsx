@@ -119,7 +119,7 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addRedFlag}
             removeItem={removeRedFlag}
             placeholder="e.g., Skipping meals, Poor sleep"
-            tooltipContent="<strong>Red Flags</strong> are warning signs that indicate your mental health may be declining.<br/><br/><strong>Examples:</strong><br/>• Skipping meals or overeating<br/>• Poor sleep patterns<br/>• Avoiding social activities<br/>• Neglecting personal hygiene<br/>• Increased irritability"
+            tooltipContent="<strong>Red Flags</strong> are warning signs that indicate your mental health may be declining. Red Flags come in two categories: thoughts and emotions.<br/><br/><strong>Thought Examples:</strong><br/>• 'I'm worthless' or negative self-talk<br/>• 'Nothing will get better'<br/>• Racing or obsessive thoughts<br/><br/><strong>Emotion Examples:</strong><br/>• Feeling overwhelmed or hopeless<br/>• Increased irritability or anger<br/>• Feeling numb or disconnected<br/>• Excessive worry or anxiety"
           />
 
           <ListManager
