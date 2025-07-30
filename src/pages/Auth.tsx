@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { sanitizeText } from '@/lib/security';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -34,16 +35,41 @@ const Auth = () => {
     setLoading(true);
     setError('');
 
+    // Input validation
+    const sanitizedEmail = sanitizeText(email.trim());
+    const sanitizedDisplayName = displayName ? sanitizeText(displayName.trim()) : '';
+    
+    if (!sanitizedEmail || !password) {
+      setError('Email and password are required');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
 
-    const { error } = await signUp(email, password, displayName);
+    const { error } = await signUp(sanitizedEmail, password, sanitizedDisplayName);
     
     if (error) {
-      setError(error.message);
+      // Provide user-friendly error messages
+      let errorMessage = error.message;
+      if (error.message.includes('already registered')) {
+        errorMessage = 'An account with this email already exists. Please try signing in instead.';
+      } else if (error.message.includes('Invalid email')) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error.message.includes('weak password')) {
+        errorMessage = 'Password is too weak. Please use a stronger password.';
+      }
+      setError(errorMessage);
     } else {
       toast({
         title: "Account created!",

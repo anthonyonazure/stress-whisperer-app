@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { sanitizeAndValidateText, createRateLimiter } from '@/lib/security';
 
 export const useUserData = () => {
   const { user } = useAuth();
@@ -10,6 +11,9 @@ export const useUserData = () => {
   const [triggers, setTriggers] = useState<string[]>([]);
   const [boundaries, setBoundaries] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Rate limiters for security
+  const addItemRateLimiter = createRateLimiter(10, 60000); // 10 additions per minute
 
   // Load user's red flags and triggers
   useEffect(() => {
@@ -71,14 +75,35 @@ export const useUserData = () => {
   const addRedFlag = async (flagText: string) => {
     if (!user || redFlags.includes(flagText) || redFlags.length >= 40) return;
 
+    // Rate limiting check
+    if (!addItemRateLimiter()) {
+      toast({
+        title: "Rate limit exceeded",
+        description: "Please wait before adding more items.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Input validation and sanitization
+    const validation = sanitizeAndValidateText(flagText, 200);
+    if (!validation.isValid) {
+      toast({
+        title: "Invalid input",
+        description: validation.error,
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('red_flags')
-        .insert({ user_id: user.id, flag_text: flagText });
+        .insert({ user_id: user.id, flag_text: validation.sanitized });
 
       if (error) throw error;
 
-      setRedFlags(prev => [...prev, flagText]);
+      setRedFlags(prev => [...prev, validation.sanitized]);
       toast({
         title: "Added",
         description: "Red flag added successfully."
@@ -123,14 +148,35 @@ export const useUserData = () => {
   const addTrigger = async (triggerText: string) => {
     if (!user || triggers.includes(triggerText) || triggers.length >= 40) return;
 
+    // Rate limiting check
+    if (!addItemRateLimiter()) {
+      toast({
+        title: "Rate limit exceeded",
+        description: "Please wait before adding more items.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Input validation and sanitization
+    const validation = sanitizeAndValidateText(triggerText, 200);
+    if (!validation.isValid) {
+      toast({
+        title: "Invalid input",
+        description: validation.error,
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('triggers')
-        .insert({ user_id: user.id, trigger_text: triggerText });
+        .insert({ user_id: user.id, trigger_text: validation.sanitized });
 
       if (error) throw error;
 
-      setTriggers(prev => [...prev, triggerText]);
+      setTriggers(prev => [...prev, validation.sanitized]);
       toast({
         title: "Added",
         description: "Trigger added successfully."
@@ -175,14 +221,35 @@ export const useUserData = () => {
   const addBoundary = async (boundaryText: string) => {
     if (!user || boundaries.includes(boundaryText) || boundaries.length >= 40) return;
 
+    // Rate limiting check
+    if (!addItemRateLimiter()) {
+      toast({
+        title: "Rate limit exceeded",
+        description: "Please wait before adding more items.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Input validation and sanitization
+    const validation = sanitizeAndValidateText(boundaryText, 200);
+    if (!validation.isValid) {
+      toast({
+        title: "Invalid input",
+        description: validation.error,
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('boundaries')
-        .insert({ user_id: user.id, boundary_text: boundaryText });
+        .insert({ user_id: user.id, boundary_text: validation.sanitized });
 
       if (error) throw error;
 
-      setBoundaries(prev => [...prev, boundaryText]);
+      setBoundaries(prev => [...prev, validation.sanitized]);
       toast({
         title: "Added",
         description: "Boundary added successfully."

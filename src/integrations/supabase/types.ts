@@ -148,7 +148,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      validate_text_length: {
+        Args: { input_text: string; max_length?: number }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
