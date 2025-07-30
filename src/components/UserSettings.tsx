@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus, ArrowLeft } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { X, Plus, ArrowLeft, HelpCircle } from 'lucide-react';
 import { useUserData } from '@/hooks/useUserData';
 
 interface UserSettingsProps {
@@ -16,9 +17,10 @@ interface ListManagerProps {
   addItem: (item: string) => void;
   removeItem: (item: string) => void;
   placeholder: string;
+  tooltipContent?: string;
 }
 
-const ListManager = ({ title, list, addItem, removeItem, placeholder }: ListManagerProps) => {
+const ListManager = ({ title, list, addItem, removeItem, placeholder, tooltipContent }: ListManagerProps) => {
   const [newItem, setNewItem] = useState('');
 
   const handleAdd = () => {
@@ -36,7 +38,21 @@ const ListManager = ({ title, list, addItem, removeItem, placeholder }: ListMana
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+      <div className="flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+        {tooltipContent && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <div className="text-sm" dangerouslySetInnerHTML={{ __html: tooltipContent }} />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
       
       <div className="flex gap-2">
         <Input
@@ -103,6 +119,7 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addRedFlag}
             removeItem={removeRedFlag}
             placeholder="e.g., Skipping meals, Poor sleep"
+            tooltipContent="<strong>Red Flags</strong> are warning signs that indicate your mental health may be declining.<br/><br/><strong>Examples:</strong><br/>• Skipping meals or overeating<br/>• Poor sleep patterns<br/>• Avoiding social activities<br/>• Neglecting personal hygiene<br/>• Increased irritability"
           />
 
           <ListManager
@@ -111,6 +128,7 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addTrigger}
             removeItem={removeTrigger}
             placeholder="e.g., Work deadlines, Traffic"
+            tooltipContent="<strong>Stress Triggers</strong> are specific situations, events, or thoughts that cause you to feel stressed or anxious.<br/><br/><strong>Examples:</strong><br/>• Work deadlines or meetings<br/>• Traffic or commuting<br/>• Financial concerns<br/>• Conflict with others<br/>• Large crowds"
           />
 
           <ListManager
@@ -119,6 +137,7 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addBoundary}
             removeItem={removeBoundary}
             placeholder="e.g., No work calls after 6pm, Take lunch breaks"
+            tooltipContent="<strong>Boundaries</strong> are healthy limits you set to protect your mental health and well-being.<br/><br/><strong>Examples:</strong><br/>• No work calls after 6pm<br/>• Taking regular lunch breaks<br/>• Saying no to extra commitments<br/>• Setting social media time limits<br/>• Prioritizing sleep schedule"
           />
         </CardContent>
       </Card>
