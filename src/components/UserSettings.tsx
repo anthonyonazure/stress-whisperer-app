@@ -128,7 +128,7 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addTrigger}
             removeItem={removeTrigger}
             placeholder="e.g., Work deadlines, Traffic"
-            tooltipContent="<strong>Stress Triggers</strong> are specific situations, events, or thoughts that cause you to feel stressed or anxious.<br/><br/><strong>Examples:</strong><br/>• Work deadlines or meetings<br/>• Traffic or commuting<br/>• Financial concerns<br/>• Conflict with others<br/>• Large crowds"
+            tooltipContent="<strong>Stress Triggers</strong> are specific situations, events, or thoughts that cause you to feel stressed or anxious. Triggers are anything that causes Red Flags to occur.<br/><br/><strong>Examples:</strong><br/>• Work deadlines or meetings<br/>• Traffic or commuting<br/>• Financial concerns<br/>• Conflict with others<br/>• Large crowds"
           />
 
           <ListManager
