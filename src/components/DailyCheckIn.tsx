@@ -14,6 +14,7 @@ import TriggersList from './TriggersList';
 import RedFlagsList from './RedFlagsList';
 import BoundariesList from './BoundariesList';
 import DailyNotes from './DailyNotes';
+import { UniversalHumanNeeds } from './UniversalHumanNeeds';
 
 interface DailyCheckInProps {
   onComplete: () => void;
@@ -27,6 +28,7 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
   const [selectedRedFlags, setSelectedRedFlags] = useState<string[]>([]);
   const [selectedBoundaries, setSelectedBoundaries] = useState<string[]>([]);
+  const [selectedUnmetNeeds, setSelectedUnmetNeeds] = useState<string[]>([]);
   const [comments, setComments] = useState('');
   const [showPrompts, setShowPrompts] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,6 +66,7 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
         setSelectedTriggers(data.selected_triggers || []);
         setSelectedRedFlags(data.selected_red_flags || []);
         setSelectedBoundaries(data.selected_boundaries || []);
+        setSelectedUnmetNeeds(data.unmet_needs || []);
         setComments(data.notes || '');
       }
     } catch (error) {
@@ -92,6 +95,7 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
         selected_triggers: selectedTriggers,
         selected_red_flags: selectedRedFlags,
         selected_boundaries: selectedBoundaries,
+        unmet_needs: selectedUnmetNeeds,
         notes: comments,
       };
 
@@ -145,6 +149,14 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
     );
   };
 
+  const handleNeedToggle = (need: string) => {
+    setSelectedUnmetNeeds(prev => 
+      prev.includes(need) 
+        ? prev.filter(n => n !== need)
+        : [...prev, need]
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -172,6 +184,11 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
             userBoundaries={boundaries}
             selectedBoundaries={selectedBoundaries}
             onBoundaryToggle={handleBoundaryToggle}
+          />
+
+          <UniversalHumanNeeds 
+            selectedNeeds={selectedUnmetNeeds}
+            onNeedToggle={handleNeedToggle}
           />
 
           <DailyNotes value={comments} onChange={setComments} />

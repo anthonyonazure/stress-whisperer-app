@@ -46,6 +46,7 @@ export type Database = {
           selected_red_flags: string[] | null
           selected_triggers: string[] | null
           stress_level: number | null
+          unmet_needs: string[] | null
           updated_at: string
           user_id: string
         }
@@ -59,6 +60,7 @@ export type Database = {
           selected_red_flags?: string[] | null
           selected_triggers?: string[] | null
           stress_level?: number | null
+          unmet_needs?: string[] | null
           updated_at?: string
           user_id: string
         }
@@ -72,6 +74,7 @@ export type Database = {
           selected_red_flags?: string[] | null
           selected_triggers?: string[] | null
           stress_level?: number | null
+          unmet_needs?: string[] | null
           updated_at?: string
           user_id?: string
         }
