@@ -1,33 +1,41 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon, LogOut, BookOpen, Coffee } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
-import { useUserData } from '@/hooks/useUserData';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import DailyCheckIn from '@/components/DailyCheckIn';
-import StressChart from '@/components/StressChart';
-import DailyQuote from '@/components/DailyQuote';
-import UserOnboarding from '@/components/UserOnboarding';
-import UserSettings from '@/components/UserSettings';
-import JournalHistory from '@/components/JournalHistory';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  TrendingUp,
+  MessageSquare,
+  Plus,
+  Settings as SettingsIcon,
+  LogOut,
+  BookOpen,
+  Coffee,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserData } from "@/hooks/useUserData";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import DailyCheckIn from "@/components/DailyCheckIn";
+import StressChart from "@/components/StressChart";
+import DailyQuote from "@/components/DailyQuote";
+import UserOnboarding from "@/components/UserOnboarding";
+import UserSettings from "@/components/UserSettings";
+import JournalHistory from "@/components/JournalHistory";
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { redFlags, triggers, loading: dataLoading } = useUserData();
   const { toast } = useToast();
-  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentView, setCurrentView] = useState("dashboard");
   const [todaysEntry, setTodaysEntry] = useState(null);
   const [hasOnboarded, setHasOnboarded] = useState(false);
 
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate("/auth");
     }
   }, [user, authLoading, navigate]);
 
@@ -39,7 +47,7 @@ const Index = () => {
   }, [user, redFlags, triggers, dataLoading]);
 
   const getTodayKey = () => {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split("T")[0];
   };
 
   useEffect(() => {
@@ -52,14 +60,15 @@ const Index = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase.from('daily_entries')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('entry_date', getTodayKey())
+      const { data, error } = await supabase
+        .from("daily_entries")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("entry_date", getTodayKey())
         .maybeSingle();
 
       if (error) {
-        console.error('Error loading today\'s entry:', error);
+        console.error("Error loading today's entry:", error);
         return;
       }
 
@@ -69,19 +78,19 @@ const Index = () => {
           mood: data.mood,
           triggers: data.selected_triggers,
           redFlags: data.selected_red_flags,
-          notes: data.notes
+          notes: data.notes,
         });
       } else {
         setTodaysEntry(null);
       }
     } catch (error) {
-      console.error('Error loading today\'s entry:', error);
+      console.error("Error loading today's entry:", error);
     }
   };
 
   const handleOnboardingComplete = () => {
     setHasOnboarded(true);
-    setCurrentView('dashboard');
+    setCurrentView("dashboard");
   };
 
   const handleSignOut = async () => {
@@ -90,34 +99,34 @@ const Index = () => {
       toast({
         title: "Error",
         description: "Failed to sign out. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } else {
-      navigate('/auth');
+      navigate("/auth");
     }
   };
-  
+
   const handleCheckinComplete = () => {
-    setCurrentView('dashboard');
+    setCurrentView("dashboard");
     // Reload today's entry from database
     loadTodaysEntry();
   };
 
   const renderView = () => {
     switch (currentView) {
-      case 'checkin':
+      case "checkin":
         return <DailyCheckIn onComplete={handleCheckinComplete} />;
-      case 'trends':
+      case "trends":
         return <StressChart />;
-      case 'settings':
-        return <UserSettings onBack={() => setCurrentView('dashboard')} />;
-      case 'journal':
+      case "settings":
+        return <UserSettings onBack={() => setCurrentView("dashboard")} />;
+      case "journal":
         return <JournalHistory />;
       default:
         return (
           <div className="space-y-6">
             <DailyQuote />
-            
+
             <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-blue-800">
@@ -130,11 +139,15 @@ const Index = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-blue-700">Stress Level:</span>
-                      <span className={`font-semibold px-3 py-1 rounded-full text-sm ${
-                        todaysEntry.stressLevel <= 3 ? 'bg-green-100 text-green-800' :
-                        todaysEntry.stressLevel <= 6 ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`font-semibold px-3 py-1 rounded-full text-sm ${
+                          todaysEntry.stressLevel <= 3
+                            ? "bg-green-100 text-green-800"
+                            : todaysEntry.stressLevel <= 6
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {todaysEntry.stressLevel}/10
                       </span>
                     </div>
@@ -143,12 +156,13 @@ const Index = () => {
                     </div>
                     {todaysEntry.triggers && todaysEntry.triggers.length > 0 && (
                       <div className="text-sm text-blue-700">
-                        <strong>Triggers:</strong> {Array.isArray(todaysEntry.triggers) ? todaysEntry.triggers.join(', ') : todaysEntry.triggers}
+                        <strong>Triggers:</strong>{" "}
+                        {Array.isArray(todaysEntry.triggers) ? todaysEntry.triggers.join(", ") : todaysEntry.triggers}
                       </div>
                     )}
-                    <Button 
-                      onClick={() => setCurrentView('checkin')} 
-                      variant="outline" 
+                    <Button
+                      onClick={() => setCurrentView("checkin")}
+                      variant="outline"
                       size="sm"
                       className="border-blue-300 text-blue-700 hover:bg-blue-100"
                     >
@@ -158,8 +172,8 @@ const Index = () => {
                 ) : (
                   <div className="text-center py-4">
                     <p className="text-blue-700 mb-4">Ready for today's check-in?</p>
-                    <Button 
-                      onClick={() => setCurrentView('checkin')}
+                    <Button
+                      onClick={() => setCurrentView("checkin")}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <Plus className="h-4 w-4 mr-2" />
@@ -172,16 +186,16 @@ const Index = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button
-                onClick={() => setCurrentView('trends')}
+                onClick={() => setCurrentView("trends")}
                 variant="outline"
                 className="h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 hover:from-purple-100 hover:to-pink-100"
               >
                 <TrendingUp className="h-6 w-6 text-purple-600" />
                 <span className="text-purple-700 font-medium">View Trends</span>
               </Button>
-              
+
               <Button
-                onClick={() => setCurrentView('checkin')}
+                onClick={() => setCurrentView("checkin")}
                 variant="outline"
                 className="h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-green-50 to-teal-50 border-green-200 hover:from-green-100 hover:to-teal-100"
               >
@@ -190,7 +204,7 @@ const Index = () => {
               </Button>
 
               <Button
-                onClick={() => setCurrentView('journal')}
+                onClick={() => setCurrentView("journal")}
                 variant="outline"
                 className="h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 hover:from-blue-100 hover:to-cyan-100"
               >
@@ -200,7 +214,7 @@ const Index = () => {
             </div>
 
             <Button
-              onClick={() => setCurrentView('settings')}
+              onClick={() => setCurrentView("settings")}
               variant="outline"
               className="w-full h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 hover:from-orange-100 hover:to-yellow-100"
             >
@@ -209,7 +223,7 @@ const Index = () => {
             </Button>
 
             <Button
-              onClick={() => window.open('https://www.buymeacoffee.com/yourusername', '_blank')}
+              onClick={() => window.open("https://www.buymeacoffee.com/mindmap", "_blank")}
               variant="outline"
               className="w-full h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 hover:from-amber-100 hover:to-orange-100"
             >
@@ -260,9 +274,9 @@ const Index = () => {
           </Button>
         </header>
 
-        {currentView !== 'dashboard' && (
+        {currentView !== "dashboard" && (
           <Button
-            onClick={() => setCurrentView('dashboard')}
+            onClick={() => setCurrentView("dashboard")}
             variant="ghost"
             className="mb-4 text-gray-600 hover:text-gray-800"
           >
