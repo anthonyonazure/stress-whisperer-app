@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon, LogOut, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import StressChart from '@/components/StressChart';
 import DailyQuote from '@/components/DailyQuote';
 import UserOnboarding from '@/components/UserOnboarding';
 import UserSettings from '@/components/UserSettings';
+import JournalHistory from '@/components/JournalHistory';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -110,6 +111,8 @@ const Index = () => {
         return <StressChart />;
       case 'settings':
         return <UserSettings onBack={() => setCurrentView('dashboard')} />;
+      case 'journal':
+        return <JournalHistory />;
       default:
         return (
           <div className="space-y-6">
@@ -184,6 +187,15 @@ const Index = () => {
               >
                 <MessageSquare className="h-6 w-6 text-green-600" />
                 <span className="text-green-700 font-medium">Daily Check-in</span>
+              </Button>
+
+              <Button
+                onClick={() => setCurrentView('journal')}
+                variant="outline"
+                className="h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 hover:from-blue-100 hover:to-cyan-100"
+              >
+                <BookOpen className="h-6 w-6 text-blue-600" />
+                <span className="text-blue-700 font-medium">Journal History</span>
               </Button>
             </div>
 
