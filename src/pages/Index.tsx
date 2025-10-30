@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon, LogOut, BookOpen } from 'lucide-react';
+import { Calendar, TrendingUp, MessageSquare, Plus, Settings as SettingsIcon, LogOut, BookOpen, Coffee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -206,6 +206,15 @@ const Index = () => {
             >
               <SettingsIcon className="h-6 w-6 text-orange-600" />
               <span className="text-orange-700 font-medium">Edit Red Flags & Triggers</span>
+            </Button>
+
+            <Button
+              onClick={() => window.open('https://www.buymeacoffee.com/yourusername', '_blank')}
+              variant="outline"
+              className="w-full h-16 flex items-center justify-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 hover:from-amber-100 hover:to-orange-100"
+            >
+              <Coffee className="h-6 w-6 text-amber-600" />
+              <span className="text-amber-700 font-medium">Buy Me a Coffee</span>
             </Button>
           </div>
         );
