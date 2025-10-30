@@ -17,7 +17,7 @@ interface ListManagerProps {
   addItem: (item: string) => void;
   removeItem: (item: string) => void;
   placeholder: string;
-  tooltipContent?: string;
+  tooltipContent?: React.ReactNode;
 }
 
 const ListManager = ({ title, list, addItem, removeItem, placeholder, tooltipContent }: ListManagerProps) => {
@@ -47,7 +47,7 @@ const ListManager = ({ title, list, addItem, removeItem, placeholder, tooltipCon
                 <HelpCircle className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <div className="text-sm" dangerouslySetInnerHTML={{ __html: tooltipContent }} />
+                <div className="text-sm">{tooltipContent}</div>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -119,7 +119,22 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addRedFlag}
             removeItem={removeRedFlag}
             placeholder="e.g., Feeling misunderstood, Constantly on edge"
-            tooltipContent="<strong>Red Flags</strong> are warning signs that indicate your mental health may be declining. Red Flags come in two categories: thoughts and emotions.<br/><br/><strong>Thought Examples:</strong><br/>• 'I'm worthless' or negative self-talk<br/>• 'Nothing will get better'<br/>• Racing or obsessive thoughts<br/><br/><strong>Emotion Examples:</strong><br/>• Feeling overwhelmed or hopeless<br/>• Increased irritability or anger<br/>• Feeling numb or disconnected<br/>• Excessive worry or anxiety"
+            tooltipContent={
+              <>
+                <strong>Red Flags</strong> are warning signs that indicate your mental health may be declining. Red Flags come in two categories: thoughts and emotions.
+                <br/><br/>
+                <strong>Thought Examples:</strong><br/>
+                • &apos;I&apos;m worthless&apos; or negative self-talk<br/>
+                • &apos;Nothing will get better&apos;<br/>
+                • Racing or obsessive thoughts
+                <br/><br/>
+                <strong>Emotion Examples:</strong><br/>
+                • Feeling overwhelmed or hopeless<br/>
+                • Increased irritability or anger<br/>
+                • Feeling numb or disconnected<br/>
+                • Excessive worry or anxiety
+              </>
+            }
           />
 
           <ListManager
@@ -128,7 +143,18 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addTrigger}
             removeItem={removeTrigger}
             placeholder="e.g., Work deadlines, Traffic"
-            tooltipContent="<strong>Stress Triggers</strong> are specific situations, events, or thoughts that cause you to feel stressed or anxious. Triggers are anything that causes Red Flags to occur.<br/><br/><strong>Examples:</strong><br/>• Work deadlines or meetings<br/>• Traffic or commuting<br/>• Financial concerns<br/>• Conflict with others<br/>• Large crowds"
+            tooltipContent={
+              <>
+                <strong>Stress Triggers</strong> are specific situations, events, or thoughts that cause you to feel stressed or anxious. Triggers are anything that causes Red Flags to occur.
+                <br/><br/>
+                <strong>Examples:</strong><br/>
+                • Work deadlines or meetings<br/>
+                • Traffic or commuting<br/>
+                • Financial concerns<br/>
+                • Conflict with others<br/>
+                • Large crowds
+              </>
+            }
           />
 
           <ListManager
@@ -137,7 +163,18 @@ const UserSettings = ({ onBack }: UserSettingsProps) => {
             addItem={addBoundary}
             removeItem={removeBoundary}
             placeholder="e.g., No work calls after 6pm, Take lunch breaks"
-            tooltipContent="<strong>Boundaries</strong> are healthy limits you set to protect your mental health and well-being.<br/><br/><strong>Examples:</strong><br/>• No work calls after 6pm<br/>• Taking regular lunch breaks<br/>• Saying no to extra commitments<br/>• Setting social media time limits<br/>• Prioritizing sleep schedule"
+            tooltipContent={
+              <>
+                <strong>Boundaries</strong> are healthy limits you set to protect your mental health and well-being.
+                <br/><br/>
+                <strong>Examples:</strong><br/>
+                • No work calls after 6pm<br/>
+                • Taking regular lunch breaks<br/>
+                • Saying no to extra commitments<br/>
+                • Setting social media time limits<br/>
+                • Prioritizing sleep schedule
+              </>
+            }
           />
         </CardContent>
       </Card>
