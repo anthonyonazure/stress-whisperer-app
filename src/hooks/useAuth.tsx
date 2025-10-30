@@ -65,6 +65,13 @@ export const useAuth = () => {
     return { error };
   };
 
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    return { error };
+  };
+
   return {
     user,
     session,
@@ -72,6 +79,7 @@ export const useAuth = () => {
     signUp,
     signIn,
     signOut,
-    resetPassword
+    resetPassword,
+    updatePassword
   };
 };
