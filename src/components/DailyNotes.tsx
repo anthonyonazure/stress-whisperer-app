@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { sanitizeText } from '@/lib/security';
 
 interface DailyNotesProps {
   value: string;
@@ -19,16 +18,15 @@ const DailyNotes = ({ value, onChange }: DailyNotesProps) => {
 
   const handleChange = (newValue: string) => {
     if (newValue.length <= maxLength) {
-      const sanitized = sanitizeText(newValue);
-      onChange(sanitized);
-      setCharCount(sanitized.length);
+      onChange(newValue);
+      setCharCount(newValue.length);
     }
   };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
-        <Label htmlFor="comments">Daily Notes</Label>
+        <Label htmlFor="comments">Daily Journal Entry</Label>
         <span className={`text-sm ${charCount > maxLength * 0.9 ? 'text-destructive' : 'text-muted-foreground'}`}>
           {charCount}/{maxLength}
         </span>

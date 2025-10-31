@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserData } from '@/hooks/useUserData';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/security';
 import SelfCarePrompts from './SelfCarePrompts';
 import StressLevelSlider from './StressLevelSlider';
 import MoodSelector from './MoodSelector';
@@ -96,7 +97,7 @@ const DailyCheckIn = ({ onComplete }: DailyCheckInProps) => {
         selected_red_flags: selectedRedFlags,
         selected_boundaries: selectedBoundaries,
         unmet_needs: selectedUnmetNeeds,
-        notes: comments,
+        notes: sanitizeText(comments),
       };
 
       const { error } = await supabase
